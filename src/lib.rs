@@ -25,10 +25,10 @@ impl Exp{
             },
             &Exp::AnyChar => {
                 p.pos += 1;
-                true
-            },  //空だとfalse
+                true    //空だとfalse
+            }, 
 //            &Exp::Symbol{ref sym} =>,
-            &Exp::Seq{ref e1, ref e2} =>{
+            &Exp::Seq{ref e1, ref e2} =>{   //ifの条件文
                 if {
                     p.pos += 1;
                     true
