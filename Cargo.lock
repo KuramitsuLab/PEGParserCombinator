@@ -1,4 +1,4 @@
 [[package]]
-name = "test1"
+name = "peg_parser_combinator"
 version = "0.1.0"
 
