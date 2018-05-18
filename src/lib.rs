@@ -19,19 +19,26 @@ impl Exp{
     pub fn parse(&self, p: &mut ParserContext) -> bool{
         match self {
             &Exp::Empty => true,
-            &Exp::Char{ref c} => {
-                p.pos += 1;
-                true  //空だとfalse
+            &Exp::Char{ref c} => {  //cを使ってマッチするかどうか確かめる
+                if p.input_len == p.pos{
+                   false
+                }else{
+                    p.pos += 1;
+                    true   
+                }
             },
             &Exp::AnyChar => {
-                p.pos += 1;
-                true    //空だとfalse
+                if p.input_len == p.pos{
+                    false
+                }else{
+                    p.pos += 1;
+                    true    //空だとfalse
+                }
             }, 
 //            &Exp::Symbol{ref sym} =>,
-            &Exp::Seq{ref e1, ref e2} =>{   //ifの条件文
-                if {
-                    p.pos += 1;
-                    true
+            &Exp::Seq{ref e1, ref e2} =>{   
+                if e1.parse(p){ //parse関数がe1のメソッド呼び
+                    e2.parse(p)
                 }else{
                     false
                 }
