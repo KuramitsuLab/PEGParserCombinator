@@ -39,7 +39,19 @@ impl Exp{
                     true    //空だとfalse
                 }
             }, 
-//            &Exp::Symbol{ref sym} =>,
+            &Exp::Symbol{ref sym} =>{
+                let old = p.clone();
+                let p_rule = p.clone();
+                match p_rule.rules.get(sym){
+                    Some(ref e) => if e.parse(p){
+                        true
+                    }else{
+                        *p = old;
+                        false
+                    },
+                    None => panic!("There is no rule. {}",sym),
+                }
+            },
             &Exp::Seq{ref e1, ref e2} =>{
                 let old = p.clone();   
                 if e1.parse(p){ //parse関数がe1のメソッド呼び

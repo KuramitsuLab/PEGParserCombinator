@@ -106,5 +106,14 @@ mod exp{
         let mut p: ParserContext = ParserContext::new(String::from(s).into_bytes(),HashMap::new());
         let peg: Exp = Exp::Not{e: Box::new(Exp::Not{e: Box::new(Exp::Char{c: 'a'})})};
         assert!(peg.parse(&mut p) && (p.pos == 0));
+    }
+    #[test]
+    fn symbol1() {
+        let s: &'static str = "ab";
+        let mut rules = HashMap::new();
+        rules.insert("A",Exp::Seq{e1: Box::new(Exp::Char{c: 'a'}),e2: Box::new(Exp::Symbol{sym: "B"})});
+        rules.insert("B",Exp::Char{c: 'b'});
+        let mut p: ParserContext = ParserContext::new(String::from(s).into_bytes(),rules.clone());
+        assert!(rules.get(&"A").unwrap().parse(&mut p) && (p.pos == s.len()));
     }     
 }
