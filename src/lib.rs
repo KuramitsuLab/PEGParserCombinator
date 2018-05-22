@@ -19,16 +19,18 @@ impl Exp{
     pub fn parse(&self, p: &mut ParserContext) -> bool{
         match self {
             &Exp::Empty => true,
-            &Exp::Char{ref c} => {  //cを使ってマッチするかどうか確かめる
-                if p.input_len == p.pos{
+            &Exp::Char{ref c } => {  //cを使ってマッチするかどうか確かめる
+                if p.input_len == p.pos{    //inputのposで指しているバイト配列の値とcをキャストしたものを比較
                    false
-                }else{
+                }else if p.input[p.pos] == (*c as u8){
                     p.pos += 1;
                     true   
+                }else{
+                    false
                 }
             },
             &Exp::AnyChar => {
-                if p.input_len == p.pos{
+                if p.input_len == p.pos{    //空、配列のn番目とpos数が同じならそこは空（配列は0から始まるから）
                     false
                 }else{
                     p.pos += 1;
@@ -36,27 +38,33 @@ impl Exp{
                 }
             }, 
 //            &Exp::Symbol{ref sym} =>,
-            &Exp::Seq{ref e1, ref e2} =>{   
+            &Exp::Seq{ref e1, ref e2} =>{
+                let old = p.clone();   
                 if e1.parse(p){ //parse関数がe1のメソッド呼び
                     e2.parse(p)
                 }else{
+                    *p = old;
                     false
                 }
             },
-/*            &Exp::Choice{ref e1, ref e2} =>{
-                if {
-                    true
-                }else if {
+            &Exp::Choice{ref e1, ref e2} =>{  //バックトラックがある
+                let old = p.clone();
+                if e1.parse(p){
                     true
                 }else{
-                    false
+                    *p = old;
+                    e2.parse(p)
                 }
             },
-            &Exp::Rep{ref e} =>,
+/*            &Exp::Rep{ref e} =>{
+                if
+            },
             &Exp::Opt{ref e} =>{
-                if{
-
+                let old = p.clone();
+                if e.parse(p){
+                    true
                 }else{
+                    *p = old;
                     true
                 }
             },
@@ -66,9 +74,9 @@ impl Exp{
         }
     }
 }
-
+#[derive(Debug,Clone)]
 pub struct ParserContext{
-    pub input: Vec<u8>,
+    pub input: Vec<u8>, //バイト配列
     pub input_len: usize,
     pub pos: usize,
 }
