@@ -56,8 +56,15 @@ impl Exp{
                     e2.parse(p)
                 }
             },
-/*            &Exp::Rep{ref e} =>{
-                if
+            &Exp::Rep{ref e} =>{
+                loop{
+                    let old = p.clone();
+                    if !e.parse(p){
+                        *p = old;
+                        break;
+                    }
+                }
+                true
             },
             &Exp::Opt{ref e} =>{
                 let old = p.clone();
@@ -68,8 +75,16 @@ impl Exp{
                     true
                 }
             },
-            &Exp::Not{ref e} =>,
-*/
+            &Exp::Not{ref e} =>{
+                let old = p.clone();
+                if e.parse(p){
+                    *p = old;
+                    false
+                }else{
+                    *p = old;
+                    true
+                }
+            },
             _ => panic!("{:?}: This expression is undefined!", self)
         }
     }
