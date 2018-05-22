@@ -1,4 +1,6 @@
-#[derive(Debug)]
+use std::collections::HashMap;
+
+#[derive(Debug,Clone)]
 pub enum Exp{
     Empty,
     Char{c:char},
@@ -94,14 +96,17 @@ pub struct ParserContext{
     pub input: Vec<u8>, //バイト配列
     pub input_len: usize,
     pub pos: usize,
+    pub rules: HashMap<&'static str,Exp>,
 }
 
 impl ParserContext{
-    pub fn new(input: Vec<u8>) -> ParserContext{
+    pub fn new(input: Vec<u8>,rules: HashMap<&'static str,Exp>) -> ParserContext{
         ParserContext{
             input_len: input.len(),
             input: input,
             pos: 0,
+            rules: rules,
         }
     }
+
 }
