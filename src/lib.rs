@@ -103,6 +103,38 @@ impl Exp{
         }
     }
 }
+
+    pub fn emp() -> Exp{
+        Exp::Empty
+    }
+    pub fn char(c: char) -> Exp{
+        Exp::Char{c: c}
+    }
+    pub fn any() -> Exp{
+        Exp::AnyChar
+    }
+    pub fn sym(sym: &'static str) -> Exp{
+        Exp::Symbol{sym: sym}
+    }
+    pub fn seq(e1: Exp,e2: Exp) -> Exp{
+        Exp::Seq{e1: Box::new(e1),e2: Box::new(e2)}
+    }
+    pub fn choice(e1: Exp,e2: Exp) -> Exp{
+        Exp::Choice{e1: Box::new(e1),e2: Box::new(e2)}
+    }
+    pub fn rep0(e: Exp) -> Exp{
+        Exp::Rep{e: Box::new(e)}
+    }
+    pub fn rep1(e: Exp) -> Exp{
+        Exp::Seq{e1: Box::new(e.clone()),e2: Box::new(Exp::Rep{e: Box::new(e)})}
+    }
+    pub fn opt(e: Exp) -> Exp{
+        Exp::Opt{e: Box::new(e)}
+    }
+    pub fn not(e: Exp) -> Exp{
+        Exp::Not{e: Box::new(e)}
+    }
+
 #[derive(Debug,Clone)]
 pub struct ParserContext{
     pub input: Vec<u8>, //バイト配列
