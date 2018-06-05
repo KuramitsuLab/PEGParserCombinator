@@ -19,7 +19,8 @@ mod exp{
     fn anychar2() {
         let s: &'static str = "aaa";
         let mut p: ParserContext = ParserContext::new(String::from(s).into_bytes(),HashMap::new());
-        let peg: Exp = Exp::Seq{e1: Box::new(Exp::AnyChar), e2: Box::new(Exp::Seq{e1: Box::new(Exp::AnyChar), e2: Box::new(Exp::AnyChar)})};
+        let peg: Exp = seq(any(),seq(any(),any()));
+//      let peg: Exp =  Exp::Seq{e1: Box::new(Exp::AnyChar), e2: Box::new(Exp::Seq{e1: Box::new(Exp::AnyChar), e2: Box::new(Exp::AnyChar)})};
         assert!(peg.parse(&mut p) && (p.pos == s.len()));
     }
 
@@ -126,5 +127,17 @@ mod exp{
         rules.insert("NUM",rep1(choice(char('0'),choice(char('1'),choice(char('2'),choice(char('3'),choice(char('4'),choice(char('5'),choice(char('6'),choice(char('7'),choice(char('8'),char('9'))))))))))));
         let mut p: ParserContext = ParserContext::new(String::from(s).into_bytes(),rules.clone());
         assert!(rules.get(&"EXP").unwrap().parse(&mut p) && (p.pos == s.len()));
-    }    
+    }
+    #[test]
+    fn tree() {
+        let s: &'static str = "abc";
+        let mut rules = HashMap::new();
+        rules.insert("S",seq(sym("A"),sym("BC")));
+        rules.insert("A",char('a'));
+        rules.insert("BC",seq(char('b'),char('c')));
+        let mut p: ParserContext = ParserContext::new(String::from(s).into_bytes(),rules.clone());
+        assert!(rules.get(&"S").unwrap().parse(&mut p) && (p.pos == s.len()));
+
+    }
+
 }

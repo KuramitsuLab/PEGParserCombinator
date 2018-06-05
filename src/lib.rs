@@ -18,14 +18,17 @@ Expの修正とparse関数の追加、ParserContextの追加を行いました�
 とりあえずEmptyだけ書いておきました。(未完成)
 */
 impl Exp{
-    pub fn parse(&self, p: &mut ParserContext) -> bool{
+    pub fn parse(&self, p: &mut ParserContext,mut child: &mut Vec<Tree>) -> bool{ //childを持たせておく
+
         match self {
             &Exp::Empty => true,
             &Exp::Char{ref c } => {  //cを使ってマッチするかどうか確かめる
+                println!("Char");
                 if p.input_len == p.pos{    //inputのposで指しているバイト配列の値とcをキャストしたものを比較
                    false
                 }else if p.input[p.pos] == (*c as u8){
                     p.pos += 1;
+                    child.push(Tree::Leaf{val: *c});
                     true   
                 }else{
                     false
@@ -40,10 +43,15 @@ impl Exp{
                 }
             }, 
             &Exp::Symbol{ref sym} =>{
+                println!("Symbol");
                 let old = p.clone();
                 let p_rule = p.clone();
+                let mut newtree = Vec::new();
+
                 match p_rule.rules.get(sym){
-                    Some(ref e) => if e.parse(p){
+                    Some(ref e) => if e.parse(p,&mut newtree){
+                        child.push(Tree::Node{sym: sym,child: newtree.clone()});
+                        println!("{:?}",child);
                         true
                     }else{
                         *p = old;
@@ -53,9 +61,10 @@ impl Exp{
                 }
             },
             &Exp::Seq{ref e1, ref e2} =>{
+                println!("Seq");
                 let old = p.clone();   
-                if e1.parse(p){ //parse関数がe1のメソッド呼び
-                    e2.parse(p)
+                if e1.parse(p,&mut child){ //parse関数がe1のメソッド呼び
+                    e2.parse(p,&mut child)
                 }else{
                     *p = old;
                     false
@@ -63,17 +72,17 @@ impl Exp{
             },
             &Exp::Choice{ref e1, ref e2} =>{  //バックトラックがある
                 let old = p.clone();
-                if e1.parse(p){
+                if e1.parse(p,&mut child){
                     true
                 }else{
                     *p = old;
-                    e2.parse(p)
+                    e2.parse(p,&mut child)
                 }
             },
             &Exp::Rep{ref e} =>{
                 loop{
                     let old = p.clone();
-                    if !e.parse(p){
+                    if !e.parse(p,&mut child){
                         *p = old;
                         break;
                     }
@@ -82,7 +91,7 @@ impl Exp{
             },
             &Exp::Opt{ref e} =>{
                 let old = p.clone();
-                if e.parse(p){
+                if e.parse(p,&mut child){
                     true
                 }else{
                     *p = old;
@@ -91,7 +100,7 @@ impl Exp{
             },
             &Exp::Not{ref e} =>{
                 let old = p.clone();
-                if e.parse(p){
+                if e.parse(p,&mut child){
                     *p = old;
                     false
                 }else{
@@ -154,3 +163,17 @@ impl ParserContext{
     }
 
 }
+
+#[derive(Debug,Clone)]
+pub enum Tree{
+    Node{sym: &'static str, child: Vec<Tree>},
+    Leaf{val: char}
+
+}
+/*
+pub fn memo(p: &mut ParserContext, symbol: Exp::Symbol) -> (Tree){
+    
+    Tree
+}
+*/
+
