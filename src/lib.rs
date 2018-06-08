@@ -23,7 +23,6 @@ impl Exp{
         match self {
             &Exp::Empty => true,
             &Exp::Char{ref c } => {  //cを使ってマッチするかどうか確かめる
-                println!("Char");
                 if p.input_len == p.pos{    //inputのposで指しているバイト配列の値とcをキャストしたものを比較
                    false
                 }else if p.input[p.pos] == (*c as u8){
@@ -43,7 +42,6 @@ impl Exp{
                 }
             }, 
             &Exp::Symbol{ref sym} =>{
-                println!("Symbol");
                 let old = p.clone();
                 let p_rule = p.clone();
                 let mut newtree = Vec::new();
@@ -61,7 +59,6 @@ impl Exp{
                 }
             },
             &Exp::Seq{ref e1, ref e2} =>{
-                println!("Seq");
                 let old = p.clone();   
                 if e1.parse(p,&mut child){ //parse関数がe1のメソッド呼び
                     e2.parse(p,&mut child)
@@ -170,10 +167,17 @@ pub enum Tree{
     Leaf{val: char}
 
 }
-/*
-pub fn memo(p: &mut ParserContext, symbol: Exp::Symbol) -> (Tree){
-    
-    Tree
+
+impl Tree{
+    pub fn two_string(&self) -> String{
+        match self{
+            &Tree::Leaf{ref val} => format!("{}",val),
+
+            &Tree::Node{ref sym, ref child} => format!("[{}{}]",sym,{
+                //アキュムレーターにくっつけた結果をパシパシ
+                child.iter().fold("".to_string(), |acc,child| format!("{} {}",acc,child.two_string()))
+            }),
+        }
+    }
 }
-*/
 
