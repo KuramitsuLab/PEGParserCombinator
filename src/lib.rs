@@ -49,7 +49,6 @@ impl Exp{
                 match p_rule.rules.get(sym){
                     Some(ref e) => if e.parse(p,&mut newtree){
                         child.push(Tree::Node{sym: sym,child: newtree.clone()});
-                        println!("{:?}",child);
                         true
                     }else{
                         *p = old;
