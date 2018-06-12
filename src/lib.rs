@@ -12,14 +12,10 @@ pub enum Exp{
     Opt{e:Box<Exp>},
     Not{e:Box<Exp>},
 }
-/*
-Expの修正とparse関数の追加、ParserContextの追加を行いました。
-このparser関数でマッチされるExpを増やすようにして開発を進めていきましょう。
-とりあえずEmptyだけ書いておきました。(未完成)
-*/
-impl Exp{
-    pub fn parse(&self, p: &mut ParserContext,mut child: &mut Vec<Tree>) -> bool{ //childを持たせておく
 
+impl Exp{
+    pub fn parse(&self, p: &mut ParserContext,mut child: &mut Vec<Tree>) -> bool{ 
+        
         match self {
             &Exp::Empty => true,
             &Exp::Char{ref c } => {  //cを使ってマッチするかどうか確かめる
@@ -38,7 +34,7 @@ impl Exp{
                     false
                 }else{
                     p.pos += 1;
-                    true    //空だとfalse
+                    true    
                 }
             }, 
             &Exp::Symbol{ref sym} =>{
@@ -46,15 +42,31 @@ impl Exp{
                 let p_rule = p.clone();
                 let mut newtree = Vec::new();
 
-                match p_rule.rules.get(sym){
-                    Some(ref e) => if e.parse(p,&mut newtree){
-                        child.push(Tree::Node{sym: sym,child: newtree.clone()});
-                        true
-                    }else{
-                        *p = old;
-                        false
+                match p.memos.clone().get(&(p.pos,sym)) { 
+                    None => {
+                        match p_rule.rules.get(sym){
+                            Some(ref e) => if e.parse(p,&mut newtree){
+                                child.push(Tree::Node{sym: sym,child: newtree.clone()});
+//                                p.memos.insert((p.pos, sym), Memos::Memo{pos: p.pos,child: child.clone()});
+
+                                true
+                            }else{
+                                *p = old;
+                                false
+                            },
+                            None => panic!("There is no rule. {}",sym),
+                        }
                     },
-                    None => panic!("There is no rule. {}",sym),
+                    Some(ref memo) => {
+                        println!("*");
+                        match memo{
+                            &Memos::Fail => return false,
+                            &Memos::Memo{ref pos,child: ref newchild} => {
+                                child.push(Tree::Node{sym: sym,child: newchild.clone()});
+                                true
+                            }, 
+                        }
+                    },  
                 }
             },
             &Exp::Seq{ref e1, ref e2} =>{
@@ -66,7 +78,7 @@ impl Exp{
                     false
                 }
             },
-            &Exp::Choice{ref e1, ref e2} =>{  //バックトラックがある
+            &Exp::Choice{ref e1, ref e2} =>{  
                 let old = p.clone();
                 if e1.parse(p,&mut child){
                     true
@@ -146,6 +158,7 @@ pub struct ParserContext{
     pub input_len: usize,
     pub pos: usize,
     pub rules: HashMap<&'static str,Exp>,
+    pub memos: HashMap<(usize,&'static str),Memos>,
 }
 
 impl ParserContext{
@@ -155,23 +168,21 @@ impl ParserContext{
             input: input,
             pos: 0,
             rules: rules,
+            memos: HashMap::new(),
         }
     }
-
 }
 
 #[derive(Debug,Clone)]
 pub enum Tree{
     Node{sym: &'static str, child: Vec<Tree>},
     Leaf{val: char}
-
 }
 
 impl Tree{
     pub fn two_string(&self) -> String{
         match self{
             &Tree::Leaf{ref val} => format!("{}",val),
-
             &Tree::Node{ref sym, ref child} => format!("[{}{}]",sym,{
                 //アキュムレーターにくっつけた結果をパシパシ
                 child.iter().fold("".to_string(), |acc,child| format!("{} {}",acc,child.two_string()))
@@ -179,4 +190,10 @@ impl Tree{
         }
     }
 }
+#[derive(Debug,Clone)]
+pub enum Memos{
+    Fail,
+    Memo{pos: usize, child: Vec<Tree>},
+}
+
 

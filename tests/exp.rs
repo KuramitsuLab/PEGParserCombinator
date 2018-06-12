@@ -179,8 +179,20 @@ mod exp{
         rules.insert("CAB",seq(char('c'),seq(char('a'),char('b'))));
         rules.insert("CAT",seq(char('c'),seq(char('a'),char('t'))));
         let mut p: ParserContext = ParserContext::new(String::from(s).into_bytes(),rules.clone());
-        assert!(Exp::Symbol{sym: &"S"}.parse(&mut p,&mut child) && (p.pos == s.len()));
+        Exp::Symbol{sym: &"S"}.parse(&mut p,&mut child);
         assert!(child[0].two_string() == "[S [CAT c a t]]")
+    }
+
+    #[test]
+    fn hayasa() {
+        let s: &'static str = "(((((((1)))))))";
+        let mut rules = HashMap::new();
+        let mut child = Vec::new();
+        rules.insert("P",choice(seq(char('('),seq(sym("A"),char(')'))),char('1')));
+        rules.insert("A",choice(seq(sym("P"),seq(char('+'),sym("A"))),choice(seq(sym("P"),seq(char('-'),sym("A"))),sym("P"))));
+        let mut p: ParserContext = ParserContext::new(String::from(s).into_bytes(),rules.clone());
+        assert!(rules.get(&"A").unwrap().parse(&mut p,&mut child) && (p.pos == s.len()));
+ 
     }
 
 }
