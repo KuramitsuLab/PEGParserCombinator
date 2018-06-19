@@ -4,8 +4,9 @@ extern crate peg_parser_combinator;
 #[cfg(test)]
 mod exp{
     use std::collections::HashMap;
-    use peg_parser_combinator::{ParserContext, Exp};
-    use peg_parser_combinator::*;
+    use peg_parser_combinator::{parser_context::parser_context::ParserContext, exp::exp::Exp};
+    use peg_parser_combinator::exp::exp::*;
+
 
     #[test]
     fn anychar1() {
