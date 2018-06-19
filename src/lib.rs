@@ -48,23 +48,26 @@ impl Exp{
                         match p_rule.rules.get(sym){
                             Some(ref e) => if e.parse(p){
                                initialtree.push(Tree::Node{sym: sym, child: p.tree.clone()});
-                                p.memos.insert((p.pos, sym), Memos::Memo{pos: p.pos,child: p.tree.clone()});
+                                p.memos.insert((old.pos, sym), Memos::Memo{pos: p.pos,child: p.tree.clone()});
                                 p.tree = initialtree.clone();
                             //    println!("{:?}",p.tree);
                                 true
                             }else{
-                                *p = old;
+                                p.memos.insert((old.pos, sym), Memos::Fail);
+                                p.pos = old.pos;
+                                p.tree = old.tree;
                                 false
                             },
                             None => panic!("There is no rule. {}",sym),
                         }
                     },
                     Some(ref memo) => {
-                        println!("*");
+                        //println!("*");
                         match memo{
                             &Memos::Fail => return false,
                             &Memos::Memo{ref pos,child: ref newchild} => {
                                 p.tree.push(Tree::Node{sym: sym,child: newchild.clone()});
+                                p.pos = *pos;
                                 true
                             }, 
                         }
@@ -77,11 +80,13 @@ impl Exp{
                     if e2.parse(p){
                         true
                     }else{
-                        *p = old;
+                        p.pos = old.pos;
+                        p.tree = old.tree.clone();
                         false
                     }
                 }else{
-                    *p = old;
+                    p.pos = old.pos;
+                    p.tree = old.tree;
                     false
                 }
             },
@@ -90,11 +95,13 @@ impl Exp{
                 if e1.parse(p){
                     true
                 }else{
-                    *p = old.clone();
+                    p.pos = old.pos;
+                    p.tree = old.tree.clone();
                     if e2.parse(p){
                         true
                     }else{
-                        *p = old;
+                        p.pos = old.pos;
+                        p.tree = old.tree;
                         false
                     }
                 }
@@ -103,7 +110,8 @@ impl Exp{
                 loop{
                     let old = p.clone();
                     if !e.parse(p){
-                        *p = old;
+                        p.pos = old.pos;
+                        p.tree = old.tree;
                         break;
                     }
                 }
@@ -114,17 +122,20 @@ impl Exp{
                 if e.parse(p){
                     true
                 }else{
-                    *p = old;
+                    p.pos = old.pos;
+                    p.tree = old.tree;
                     true
                 }
             },
             &Exp::Not{ref e} =>{
                 let old = p.clone();
                 if e.parse(p){
-                    *p = old;
+                    p.pos = old.pos;
+                    p.tree = old.tree;
                     false
                 }else{
-                    *p = old;
+                    p.pos = old.pos;
+                    p.tree = old.tree;
                     true
                 }
             },
